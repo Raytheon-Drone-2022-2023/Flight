@@ -156,7 +156,7 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
 def generate_simple_zig_zag(zigs=3):
     locations = []
     locations.append(get_coordinates_ahead(15))
-    for i in range(3):
+    for i in range(zigs):
         if i % 2 == 0:
             locations.append(get_coordinates_ahead(2, 90))
             locations.append(get_coordinates_ahead(15,90))
@@ -175,5 +175,3 @@ time.sleep(5)
 arm_and_takeoff(2.5, gps=True)
 fly_to_points(locations, 1.5)
 land()
-
-
