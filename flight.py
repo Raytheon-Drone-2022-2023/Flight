@@ -80,12 +80,12 @@ def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
 
     return [w, x, y, z]
 
-def get_coordinates_ahead(distance, units=Units.meters):
+def get_coordinates_ahead(distance, direction=0, units=Units.meters):
     if units is Units.yards:
         distance /= 1.094
 
     R = 6378.1
-    brng = math.radians(vehicle.heading)
+    brng = math.radians(vehicle.heading + direction) # adjust bearing to desired direction
     d = float(distance) / 1000.0
     lat1 = math.radians(vehicle.location.global_relative_frame.lat)
     lon1 = math.radians(vehicle.location.global_relative_frame.lon)
@@ -95,29 +95,8 @@ def get_coordinates_ahead(distance, units=Units.meters):
                              math.cos(lat1), math.cos(d / R) - math.sin(lat1) * math.sin(lat2))
     lat2 = math.degrees(lat2)
     lon2 = math.degrees(lon2)
-    #return LocationGlobalRelative(lat2, lon2, vehicle.location.global_relative_frame.alt)
-    return LocationGlobalRelative(lat2, lon2, 2.5)
-
-def get_coordinates_ahead2(distance, direction = 0, units=Units.meters):
-    if units is Units.yards:
-        distance /= 1.094
-
-    R = 6378.1
-    brng = math.radians(vehicle.heading + direction)
-    d = float(distance) / 1000.0
-    lat1 = math.radians(vehicle.location.global_relative_frame.lat)
-    lon1 = math.radians(vehicle.location.global_relative_frame.lon)
     
-    lat2 = math.asin(math.sin(lat1) * math.cos(d / R) +
-                     math.cos(lat1) * math.sin(d / R) * math.cos(brng))
-    
-    lon2 = lon1 + math.atan2(math.sin(brng) * math.sin(d / R) *
-                             math.cos(lat1), math.cos(d / R) - math.sin(lat1) * math.sin(lat2))
-    
-    lat2 = math.degrees(lat2)
-    lon2 = math.degrees(lon2)
-    #return LocationGlobalRelative(lat2, lon2, vehicle.location.global_relative_frame.alt)
-    return LocationGlobalRelative(lat2, lon2, 2.5)
+    return LocationGlobalRelative(lat2, lon2, vehicle.location.global_relative_frame.alt)
 
 
 def get_distance_to(location, units=Units.meters):
@@ -150,10 +129,10 @@ def fly_to_point(location, speed=1):
 def fly_to_points(locations, speed=1):
 	for i in range(len(locations)):
 		print("Flying to target", i+1)
-		vehicle.simple_goto(location, groundspeed=speed)
-		while get_distance_to(location) > 1:
+		vehicle.simple_goto(locations[i], groundspeed=speed)
+		while get_distance_to(locations[i]) > 1:
 			# time.sleep(1)
-			print('%d yards away            \r' % get_distance_to(location, Units.yards), end="")
+			print('%d yards away            \r' % get_distance_to(locations[i], Units.yards), end="")
 	
 		print('\nReached target', i+1)
 	
@@ -173,33 +152,28 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
     for x in range(0, duration):
         vehicle.send_mavlink(msg)
         time.sleep(1)
+        
+def generate_simple_zig_zag(zigs=3):
+    locations = []
+    locations.append(get_coordinates_ahead(15))
+    for i in range(3):
+        if i % 2 == 0:
+            locations.append(get_coordinates_ahead(2, 90))
+            locations.append(get_coordinates_ahead(15,90))
+        else:
+            locations.append(get_coordinates_ahead(2, -90))
+            locations.append(get_coordinates_ahead(15,-90))
+        
+    for i in locations:
+        print(i)
+        
+    return locations
 
 initialize()
-
-locations = []
-locations.append(get_coordinates_ahead(15))
-for i in range(3):
-    if i % 2 == 0:
-        locations.append(get_coordinates_ahead2(2, 90))
-        locations.append(get_coordinates_ahead2(15,90))
-    else:
-        locations.append(get_coordinates_ahead2(2, -90))
-        locations.append(get_coordinates_ahead2(15,-90))
-        
-for i in locations:
-    print(i)
-    
+locations = generate_simple_zig_zag()
 time.sleep(5)
 arm_and_takeoff(2.5, gps=True)
 fly_to_points(locations, 1.5)
 land()
-
-'''
-fly_to_point(get_coordinates_ahead(15),2)
-fly_to_point(get_coordinates_ahead2(15,90),2)
-fly_to_point(get_coordinates_ahead2(15,90),2)
-fly_to_point(get_coordinates_ahead2(15,90),2)
-land()
-'''
 
 
