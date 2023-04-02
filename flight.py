@@ -125,18 +125,26 @@ def fly_to_point(location, speed=1):
         print('%d yards away            \r' % get_distance_to(location, Units.yards), end="")
 
     print('\nReached target location')
-
+    
+def check_status():
+    return vehicle.system_status != 'EMERGENCY' or vehicle.system_status != 'CRITICAL'
+    
 def fly_to_points(locations, speed=1):
-	for i in range(len(locations)):
-		print("Flying to target", i+1)
-		vehicle.simple_goto(locations[i], groundspeed=speed)
-		while get_distance_to(locations[i]) > 1:
-			# time.sleep(1)
-			print('%d yards away            \r' % get_distance_to(locations[i], Units.yards), end="")
-	
-		print('\nReached target', i+1)
-	
-	return 0
+    for i in range(len(locations)):
+        if check_status():
+            print('Flying to target', i + 1)
+            vehicle.simple_goto(locations[i], groundspeed=speed)
+            while get_distance_to(locations[i]) > 1:
+                time.sleep(1)
+                print('%d yards away            \r' % get_distance_to(locations[i], Units.yards), end="")
+                
+            print('\nReached target', i + 1)
+            
+        else:
+            land()
+            vehicle.close()
+            
+    return 0
 
 def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
@@ -153,16 +161,16 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
         vehicle.send_mavlink(msg)
         time.sleep(1)
         
-def generate_simple_zig_zag(zigs=3):
+def generate_simple_zig_zag(zigs=3, distance=15):
     locations = []
-    locations.append(get_coordinates_ahead(15))
+    locations.append(get_coordinates_ahead(distance))
     for i in range(zigs):
         if i % 2 == 0:
             locations.append(get_coordinates_ahead(2, 90))
-            locations.append(get_coordinates_ahead(15,90))
+            locations.append(get_coordinates_ahead(distance,90))
         else:
             locations.append(get_coordinates_ahead(2, -90))
-            locations.append(get_coordinates_ahead(15,-90))
+            locations.append(get_coordinates_ahead(distance,-90))
         
     for i in locations:
         print(i)
@@ -175,3 +183,4 @@ time.sleep(5)
 arm_and_takeoff(2.5, gps=True)
 fly_to_points(locations, 1.5)
 land()
+vehicle.close()
