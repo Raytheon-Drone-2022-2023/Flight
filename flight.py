@@ -118,13 +118,16 @@ def get_distance_to(location, units=Units.meters):
 
 
 def fly_to_point(location, speed=1):
-    print("Flying to target location")
-    vehicle.simple_goto(location, groundspeed=speed)
-    while get_distance_to(location) > 1:
-        # time.sleep(1)
-        print('%d yards away            \r' % get_distance_to(location, Units.yards), end="")
+    if check_status():
+        print("Flying to target location")
+        vehicle.simple_goto(location, groundspeed=speed)
+        while get_distance_to(location) > 1:
+            # time.sleep(1)
+            print('%d yards away            \r' % get_distance_to(location, Units.yards), end="")
 
-    print('\nReached target location')
+        print('\nReached target location')
+    else:
+        print('EMERGENCY!\nLanding...')
     
 def check_status():
     return vehicle.system_status != 'EMERGENCY' or vehicle.system_status != 'CRITICAL'
@@ -161,26 +164,19 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
         vehicle.send_mavlink(msg)
         time.sleep(1)
         
-def generate_simple_zig_zag(zigs=3, distance=15):
-    locations = []
-    locations.append(get_coordinates_ahead(distance))
+def fly_simple_zig_zag(zigs=3, distance=15):
+    fly_to_point(get_coordinates_ahead(distance), 1.5)
     for i in range(zigs):
         if i % 2 == 0:
-            locations.append(get_coordinates_ahead(2, 90))
-            locations.append(get_coordinates_ahead(distance,90))
+            fly_to_point(get_coordinates_ahead(2, 90), 1.5)
+            fly_to_point(get_coordinates_ahead(distance,90), 1.5)
         else:
-            locations.append(get_coordinates_ahead(2, -90))
-            locations.append(get_coordinates_ahead(distance,-90))
-        
-    for i in locations:
-        print(i)
-        
-    return locations
+            fly_to_point(get_coordinates_ahead(2, -90), 1.5)
+            fly_to_point(get_coordinates_ahead(distance,-90), 1.5)
 
 initialize()
-locations = generate_simple_zig_zag()
 time.sleep(5)
 arm_and_takeoff(2.5, gps=True)
-fly_to_points(locations, 1.5)
+fly_simple_zig_zag()
 land()
 vehicle.close()
