@@ -194,12 +194,12 @@ vehicle = None
 
 deg_to_rad = lambda deg: deg * (math.pi / 180)
 
-client = MyOwnBot('MyBot', realname='My Bot')
-client.run('chat.freenode.net', tls=True, tls_verify=False)
+# client = MyOwnBot('MyBot', realname='My Bot')
+# client.run('chat.freenode.net', tls=True, tls_verify=False)
 
-# initialize()
-# time.sleep(5)
-# arm_and_takeoff(2.5, gps=True)
-# fly_simple_zig_zag()
-# land()
-# vehicle.close()
+initialize()
+time.sleep(5)
+arm_and_takeoff(2.5, gps=True)
+fly_simple_zig_zag()
+land()
+vehicle.close()
