@@ -7,6 +7,10 @@ import math
 import pydle
 import time
 
+class Units(Enum):
+	meters = 1
+	yards = 2
+
 #Run this first
 def initialize():
 	global vehicle
@@ -186,10 +190,6 @@ class MyOwnBot(pydle.Client):
             await self.message(target, 'test')
 
 vehicle = None
-
-class Units(Enum):
-	meters = 1
-	yards = 2
 
 deg_to_rad = lambda deg: deg * (math.pi / 180)
 
