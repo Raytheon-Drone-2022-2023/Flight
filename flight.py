@@ -6,6 +6,7 @@ from enum import Enum
 import math
 import pydle
 import time
+import RPi.GPIO as GPIO
 
 class Units(Enum):
 	meters = 1
@@ -197,9 +198,17 @@ deg_to_rad = lambda deg: deg * (math.pi / 180)
 # client = MyOwnBot('MyBot', realname='My Bot')
 # client.run('chat.freenode.net', tls=True, tls_verify=False)
 
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(33, GPIO.OUT)
+p = GPIO.PWM(33, 0.5)
+p.start(1)
+
 initialize()
 time.sleep(5)
 arm_and_takeoff(2.5, gps=True)
 fly_simple_zig_zag()
 land()
 vehicle.close()
+
+p.stop()
+GPIO.cleanup()
