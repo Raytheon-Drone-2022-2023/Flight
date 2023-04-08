@@ -4,16 +4,8 @@ import time
 import argparse
 from enum import Enum
 import math
-
-#Functions related to basic drone flight
-
-vehicle = None
-
-class Units(Enum):
-	meters = 1
-	yards = 2
-
-deg_to_rad = lambda deg: deg * (math.pi / 180)
+import pydle
+import time
 
 #Run this first
 def initialize():
@@ -174,9 +166,39 @@ def fly_simple_zig_zag(zigs=3, distance=15):
             fly_to_point(get_coordinates_ahead(2, -90), 1.5)
             fly_to_point(get_coordinates_ahead(distance,-90), 1.5)
 
-initialize()
-time.sleep(5)
-arm_and_takeoff(2.5, gps=True)
-fly_simple_zig_zag()
-land()
-vehicle.close()
+# Simple echo bot.
+class MyOwnBot(pydle.Client):
+    async def on_connect(self):
+        await self.join('#RTXDrone')
+        initialize()
+        time.sleep(5)
+        await self.messsage('#RTXDrone', "Taking off...")
+        arm_and_takeoff(2.5, gps=True)
+        await self.messsage('#RTXDrone', "Starting zig zag...")
+        fly_simple_zig_zag()
+        await self.messsage('#RTXDrone', "Landing...")
+        land()
+        vehicle.close()
+
+    async def on_message(self, target, source, message):
+         # don't respond to our own messages, as this leads to a positive feedback loop
+         if source != self.nickname:
+            await self.message(target, 'test')
+
+vehicle = None
+
+class Units(Enum):
+	meters = 1
+	yards = 2
+
+deg_to_rad = lambda deg: deg * (math.pi / 180)
+
+client = MyOwnBot('MyBot', realname='My Bot')
+client.run('chat.freenode.net', tls=True, tls_verify=False)
+
+# initialize()
+# time.sleep(5)
+# arm_and_takeoff(2.5, gps=True)
+# fly_simple_zig_zag()
+# land()
+# vehicle.close()
