@@ -113,7 +113,8 @@ def get_distance_to(location, units=Units.meters):
     return distance
 
 
-def fly_to_point(location, speed=1):
+def fly_to_point(chatbot, location, speed=1):
+    chatbot.message('Flying to target location')
     if check_status():
         print("Flying to target location")
         vehicle.simple_goto(location, groundspeed=speed)
@@ -160,15 +161,15 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
         vehicle.send_mavlink(msg)
         time.sleep(1)
         
-def fly_simple_zig_zag(zigs=3, distance=15):
-    fly_to_point(get_coordinates_ahead(distance), 1.5)
+def fly_simple_zig_zag(chatbot, zigs=3, distance=15):
+    fly_to_point(chatbot, get_coordinates_ahead(distance), 1.5)
     for i in range(zigs):
         if i % 2 == 0:
-            fly_to_point(get_coordinates_ahead(2, 90), 1.5)
-            fly_to_point(get_coordinates_ahead(distance,90), 1.5)
+            fly_to_point(chatbot, get_coordinates_ahead(2, 90), 1.5)
+            fly_to_point(chatbot, get_coordinates_ahead(distance,90), 1.5)
         else:
-            fly_to_point(get_coordinates_ahead(2, -90), 1.5)
-            fly_to_point(get_coordinates_ahead(distance,-90), 1.5)
+            fly_to_point(chatbot, get_coordinates_ahead(2, -90), 1.5)
+            fly_to_point(chatbot, get_coordinates_ahead(distance,-90), 1.5)
 
 # Simple echo bot.
 class MyOwnBot(pydle.Client):
@@ -179,7 +180,7 @@ class MyOwnBot(pydle.Client):
         await self.messsage('#RTXDrone', "Taking off...")
         arm_and_takeoff(2.5, gps=True)
         await self.messsage('#RTXDrone', "Starting zig zag...")
-        fly_simple_zig_zag()
+        fly_simple_zig_zag(self)
         await self.messsage('#RTXDrone', "Landing...")
         land()
         vehicle.close()
