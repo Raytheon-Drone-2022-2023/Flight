@@ -218,7 +218,7 @@ client = MyOwnBot('SMU', realname='SMU')
 cam = Camera()
 
 t1 = threading.Thread(constant_shoot)
-t2 = threading.Thread(cam.detect_markers())
+t2 = threading.Thread(cam.detect_markers)
 t3 = threading.Thread(client.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
 t4 = threading.Thread(flight, (7,))
 
