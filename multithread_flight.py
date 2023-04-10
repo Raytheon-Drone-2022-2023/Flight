@@ -6,8 +6,7 @@ from enum import Enum
 import math
 import pydle
 import time
-from datetime import datetime
-import pytz
+from datetime import datetime, timedelta
 import RPi.GPIO as GPIO
 import threading
 from camera import DroneCamera
@@ -203,7 +202,7 @@ class DroneBot(pydle.Client):
          if source != self.nickname:
             SchoolName = 'SMU'
             UGV_ArucoMarkerID = message.split('_')[3]
-            timestamp = datetime.now(pytz.timezone('US/Pacific')).strftime("%H:%M:%S")
+            timestamp = (datetime.now() - timedelta(hours=5)).strftime("%H:%M:%S")
             GPS_location_lat = vehicle.location.global_relative_frame.lat
             GPS_location_lon = vehicle.location.global_relative_frame.lon
             await self.message(target, 'RTXDC_2023 {}_UAV_Fire_{}_{}_{}_{}'.format(SchoolName, 
