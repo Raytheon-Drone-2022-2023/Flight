@@ -8,7 +8,7 @@ import pydle
 import time
 import RPi.GPIO as GPIO
 import threading
-from camera import Camera
+from camera import DroneCamera
 
 class Units(Enum):
 	meters = 1
@@ -215,7 +215,7 @@ vehicle = None
 deg_to_rad = lambda deg: deg * (math.pi / 180)
 
 client = MyOwnBot('SMU', realname='SMU')
-cam = Camera()
+cam = DroneCamera()
 
 t1 = threading.Thread(constant_shoot)
 t2 = threading.Thread(cam.detect_markers)

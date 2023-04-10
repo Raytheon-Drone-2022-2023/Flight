@@ -13,7 +13,7 @@ import pandas as pd
 from picamera2 import Picamera2
 import cv2
 
-class Camera():
+class DroneCamera():
     def __init__(self):
         # define names of each possible ArUco tag OpenCV supports
         self.ARUCO_DICT = {
