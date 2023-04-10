@@ -8,6 +8,7 @@ import pydle
 import time
 import RPi.GPIO as GPIO
 import threading
+from camera import Camera
 
 class Units(Enum):
 	meters = 1
@@ -214,17 +215,20 @@ vehicle = None
 deg_to_rad = lambda deg: deg * (math.pi / 180)
 
 client = MyOwnBot('SMU', realname='SMU')
+cam = Camera()
 
 t1 = threading.Thread(constant_shoot)
-t2 = threading.Thread(client.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
-t3 = threading.Thread(flight, (7,))
+t2 = threading.Thread(cam.detect_markers())
+t3 = threading.Thread(client.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
+t4 = threading.Thread(flight, (7,))
 
 t1.start()
 t2.start()
-time.sleep(5)
 t3.start()
+time.sleep(5)
+t4.start()
 
-threads = [t1, t2, t3]
+threads = [t1, t2, t3, t4]
 for t in threads:
     t.join()
     
