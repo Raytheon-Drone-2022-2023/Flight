@@ -6,6 +6,8 @@ from enum import Enum
 import math
 import pydle
 import time
+from datetime import datetime
+import pytz
 import RPi.GPIO as GPIO
 import threading
 from camera import DroneCamera
@@ -192,34 +194,34 @@ def constant_shoot():
     GPIO.cleanup()  
 
 # Simple echo bot.
-class MyOwnBot(pydle.Client):
+class DroneBot(pydle.Client):
     async def on_connect(self):
         await self.join('#RTXDrone')
-        initialize()
-        time.sleep(5)
-        await self.messsage('#RTXDrone', "Taking off...")
-        arm_and_takeoff(2.5, gps=True)
-        await self.messsage('#RTXDrone', "Starting zig zag...")
-        fly_simple_zig_zag(self)
-        await self.messsage('#RTXDrone', "Landing...")
-        land()
-        vehicle.close()
 
     async def on_message(self, target, source, message):
          # don't respond to our own messages, as this leads to a positive feedback loop
          if source != self.nickname:
-            await self.message(target, 'test')
+            SchoolName = 'SMU'
+            UGV_ArucoMarkerID = message.split('_')[3]
+            timestamp = datetime.now(pytz.timezone('US/Pacific')).strftime("%H:%M:%S")
+            GPS_location_lat = vehicle.location.global_relative_frame.lat
+            GPS_location_lon = vehicle.location.global_relative_frame.lon
+            await self.message(target, 'RTXDC_2023 {}_UAV_Fire_{}_{}_{}_{}'.format(SchoolName, 
+                                                                                   UGV_ArucoMarkerID, 
+                                                                                   timestamp, 
+                                                                                   GPS_location_lat, 
+                                                                                   GPS_location_lon))
 
 vehicle = None
 
 deg_to_rad = lambda deg: deg * (math.pi / 180)
 
-client = MyOwnBot('SMU', realname='SMU')
+bot = DroneBot('SMU', realname='SMU')
 cam = DroneCamera()
 
 t1 = threading.Thread(constant_shoot)
 t2 = threading.Thread(cam.detect_markers)
-t3 = threading.Thread(client.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
+t3 = threading.Thread(bot.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
 t4 = threading.Thread(flight, (7,))
 
 t1.start()
