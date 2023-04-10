@@ -1,4 +1,4 @@
-from dronekit import connect, VehicleMode, LocationGlobalRelative
+# from dronekit import connect, VehicleMode, LocationGlobalRelative
 from pymavlink import mavutil
 import time
 import argparse
@@ -201,7 +201,7 @@ class DroneBot(pydle.Client):
          # don't respond to our own messages, as this leads to a positive feedback loop
          if source != self.nickname:
             SchoolName = 'SMU'
-            UGV_ArucoMarkerID = message.split('_')[3]
+            UGV_ArucoMarkerID = message.split('_')[4]
             timestamp = (datetime.now() - timedelta(hours=5)).strftime("%H:%M:%S")
             GPS_location_lat = vehicle.location.global_relative_frame.lat
             GPS_location_lon = vehicle.location.global_relative_frame.lon
