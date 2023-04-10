@@ -176,7 +176,7 @@ def fly_simple_zig_zag(chatbot, alt=2.5, zigs=3, distance=15):
             fly_to_point(chatbot, get_coordinates_ahead(2, alt, -90), 1.5)
             fly_to_point(chatbot, get_coordinates_ahead(distance,alt, -90), 1.5)
             
-def flight(alt=2.5):
+def fly(alt=2.5):
     initialize()
     time.sleep(5)
     arm_and_takeoff(alt, gps=True)
@@ -222,7 +222,7 @@ cam = DroneCamera()
 t1 = threading.Thread(constant_shoot)
 t2 = threading.Thread(cam.detect_markers)
 t3 = threading.Thread(bot.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
-t4 = threading.Thread(flight, (7,))
+t4 = threading.Thread(fly, (7,))
 
 t1.start()
 t2.start()
