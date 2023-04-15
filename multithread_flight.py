@@ -117,8 +117,7 @@ def get_distance_to(location, units=Units.meters):
     return distance
 
 
-def fly_to_point(chatbot, location, speed=1):
-    chatbot.message('Flying to target location')
+def fly_to_point(location, speed=1):
     if check_status():
         print("Flying to target location")
         vehicle.simple_goto(location, groundspeed=speed)
@@ -165,32 +164,30 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
         vehicle.send_mavlink(msg)
         time.sleep(1)
         
-def fly_simple_zig_zag(chatbot, alt=2.5, zigs=3, distance=15):
-    fly_to_point(chatbot, get_coordinates_ahead(distance, alt), 1.5)
+def fly_simple_zig_zag(alt=2.5, zigs=3, distance=15):
+    fly_to_point(get_coordinates_ahead(distance, alt), 1.5)
     for i in range(zigs):
         if i % 2 == 0:
-            fly_to_point(chatbot, get_coordinates_ahead(2, alt, 90), 1.5)
-            fly_to_point(chatbot, get_coordinates_ahead(distance, alt, 90), 1.5)
+            fly_to_point(get_coordinates_ahead(5, alt, 90), 0.75)
+            fly_to_point(get_coordinates_ahead(distance, alt, 90), 0.75)
         else:
-            fly_to_point(chatbot, get_coordinates_ahead(2, alt, -90), 1.5)
-            fly_to_point(chatbot, get_coordinates_ahead(distance,alt, -90), 1.5)
+            fly_to_point(get_coordinates_ahead(5, alt, -90), 0.75)
+            fly_to_point(get_coordinates_ahead(distance,alt, -90), 0.75)
             
 def fly(alt=2.5):
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(33, GPIO.OUT)
+    p = GPIO.PWM(33, 0.9)
+    p.start(1)
     initialize()
     time.sleep(5)
     arm_and_takeoff(alt, gps=True)
-    fly_simple_zig_zag()
+    fly_simple_zig_zag(alt=alt, zigs=9, distance=20)
     land()
     vehicle.close()
-    
-def constant_shoot():
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(33, GPIO.OUT)
-    p = GPIO.PWM(33, 0.5)
-    p.start(1)
-    input('Press enter to stop shooting...')
     p.stop()
-    GPIO.cleanup()  
+    GPIO.cleanup()
+     
 
 # Simple echo bot.
 class DroneBot(pydle.Client):
@@ -215,21 +212,17 @@ vehicle = None
 
 deg_to_rad = lambda deg: deg * (math.pi / 180)
 
-bot = DroneBot('SMU', realname='SMU')
+bot = DroneBot('SMUSeeker', realname='SMUSeeker')
 cam = DroneCamera()
 
-t1 = threading.Thread(constant_shoot)
-t2 = threading.Thread(cam.detect_markers)
-t3 = threading.Thread(bot.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
-t4 = threading.Thread(fly, (7,))
+t1 = threading.Thread(bot.run, args=('chat.freenode.net',), kwargs={'tls': True, 'tls_verify': False})
+t2 = threading.Thread(fly, (7,))
 
 t1.start()
-t2.start()
-t3.start()
 time.sleep(5)
-t4.start()
+t2.start()
 
-threads = [t1, t2, t3, t4]
+threads = [t1, t2]
 for t in threads:
     t.join()
     
